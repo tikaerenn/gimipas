@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gim IPAS: Belajar Hari & Bulan SDKh Tunarungu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Fredoka', 'Nunito', sans-serif;
+            background-color: #f0fdf4;
+            user-select: none;
+        }
+        .btn-bounce {
+            transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        .btn-bounce:active {
+            transform: scale(0.95);
+        }
+        .card-hover {
+            transition: all 0.25s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+        }
+        .draggable {
+            cursor: grab;
+            touch-action: none;
+        }
+        .draggable:active {
+            cursor: grabbing;
+        }
+        .dropzone-active {
+            border-color: #3b82f6 !important;
+            background-color: #eff6ff !important;
+        }
+        /* Custom scrollbar for material */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between text-slate-800 bg-gradient-to-br from-sky-100 via-teal-50 to-amber-50">
+
+    <!-- HEADER NAVBAR -->
+    <header class="bg-white/90 backdrop-blur-md shadow-md sticky top-0 z-50 px-4 py-3 border-b-4 border-teal-400">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-teal-500 text-white p-2 rounded-2xl text-2xl shadow-md">
+                    <i class="fa-solid fa-calendar-days"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold text-teal-800 tracking-wide">IPAS Ceria SDKh</h1>
+                    <p class="text-xs font-semibold text-teal-600">Materi: Nama Hari & Bulan (Pengembang: Ibu Tika)</p>
+                </div>
+            </div>
+            
+            <!-- Student Profile Badge & Music Toggle -->
+            <div class="flex items-center gap-3">
+                <button id="btn-toggle-music" onclick="toggleBackgroundMusic()" class="hidden bg-sky-100 hover:bg-sky-200 text-sky-700 font-bold px-3 py-1.5 rounded-full text-xs md:text-sm flex items-center gap-1.5 border border-sky-300 btn-bounce">
+                    <i id="music-icon" class="fa-solid fa-volume-xmark"></i> <span id="music-text">Musik: Mati</span>
+                </button>
+                <div id="student-badge" class="hidden flex items-center gap-2 bg-amber-100 border-2 border-amber-400 px-3 py-1.5 rounded-full shadow-sm">
+                    <div class="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold text-lg">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <span id="badge-student-name" class="font-bold text-amber-900 text-sm md:text-base">Siswa</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto w-full p-4 flex-grow flex flex-col justify-center my-4">
+
+        <!-- ================= SECTION 1: REGISTRASI NAMA ================= -->
+        <section id="section-welcome" class="bg-white rounded-3xl p-6 md:p-10 shadow-xl border-4 border-teal-300 text-center max-w-lg mx-auto w-full relative overflow-hidden">
+            <div class="absolute -top-10 -right-10 w-32 h-32 bg-yellow-200 rounded-full opacity-50 blur-xl"></div>
+            <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-teal-200 rounded-full opacity-50 blur-xl"></div>
+
+            <div class="relative z-10">
+                <div class="w-24 h-24 bg-gradient-to-tr from-teal-400 to-sky-400 text-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg text-4xl border-4 border-white">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <h2 class="text-2xl md:text-3xl font-extrabold text-teal-900 mb-2">Selamat Datang! 👋</h2>
+                <p class="text-slate-600 font-semibold mb-6 text-sm md:text-base">Ayo belajar Hari dan Bulan dengan cara yang seru dan visual!</p>
+
+                <form id="form-login" onsubmit="registerStudent(event)" class="space-y-4">
+                    <div class="text-left">
+                        <label class="block font-bold text-slate-700 mb-1 text-sm"><i class="fa-solid fa-signature text-teal-500"></i> Tulis Nama Kamu:</label>
+                        <input type="text" id="input-student-name" required placeholder="Contoh: Budi Pratama" class="w-full px-4 py-3 rounded-2xl border-2 border-teal-300 focus:border-teal-500 focus:ring-4 focus:ring-teal-100 outline-none text-lg font-bold text-slate-800 transition">
+                    </div>
+                    <button type="submit" class="w-full bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white font-extrabold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl btn-bounce text-xl tracking-wide border-b-4 border-emerald-700">
+                        MULAI BELAJAR 🚀
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 2: MENU UTAMA ================= -->
+        <section id="section-menu" class="hidden space-y-6">
+            <!-- Greeting Header -->
+            <div class="bg-gradient-to-r from-sky-400 to-teal-400 rounded-3xl p-6 text-white shadow-lg flex flex-col md:flex-row justify-between items-center gap-4">
+                <div>
+                    <h2 class="text-2xl md:text-3xl font-black">Halo, <span id="display-student-name">Murid</span>! 👋</h2>
+                    <p class="text-sky-100 font-semibold mt-1">Pilih menu di bawah ini untuk belajar atau bermain kuis.</p>
+                </div>
+                <div class="flex gap-2 bg-white/20 p-2 rounded-2xl backdrop-blur-sm">
+                    <div class="text-center px-3 py-1 bg-white/30 rounded-xl">
+                        <span class="block text-xs uppercase tracking-wider text-teal-900 font-black">Lencana</span>
+                        <span id="badge-count-display" class="font-bold text-xl">⭐ 0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Menu Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Card Materi -->
+                <div onclick="showMateri()" class="bg-white rounded-3xl p-6 shadow-md border-4 border-sky-200 card-hover cursor-pointer flex flex-col justify-between hover:border-sky-400 group">
+                    <div>
+                        <div class="w-16 h-16 bg-sky-100 text-sky-600 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-book-open-reader"></i>
+                        </div>
+                        <h3 class="text-2xl font-black text-slate-800 mb-2">📖 Materi Belajar</h3>
+                        <p class="text-slate-600 text-sm font-semibold">Pelajari nama 7 hari & 12 bulan lengkap dengan simbol visual dan isyarat.</p>
+                    </div>
+                    <div class="mt-6 flex justify-end">
+                        <span class="bg-sky-500 text-white font-bold px-4 py-2 rounded-xl text-sm group-hover:bg-sky-600">Buka Materi <i class="fa-solid fa-arrow-right ml-1"></i></span>
+                    </div>
+                </div>
+
+                <!-- Card Kuis -->
+                <div onclick="showKuisMenu()" class="bg-white rounded-3xl p-6 shadow-md border-4 border-amber-200 card-hover cursor-pointer flex flex-col justify-between hover:border-amber-400 group">
+                    <div>
+                        <div class="w-16 h-16 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition">
+                            <i class="fa-solid fa-gamepad"></i>
+                        </div>
+                        <h3 class="text-2xl font-black text-slate-800 mb-2">🎮 Permainan Kuis</h3>
+                        <p class="text-slate-600 text-sm font-semibold">Uji pemahamanmu dari Level 1 sampai Level 3 dan dapatkan Sertifikat!</p>
+                    </div>
+                    <div class="mt-6 flex justify-end">
+                        <span class="bg-amber-500 text-white font-bold px-4 py-2 rounded-xl text-sm group-hover:bg-amber-600">Pilih Level <i class="fa-solid fa-arrow-right ml-1"></i></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 3: MATERI PEMBELAJARAN ================= -->
+        <section id="section-materi" class="hidden space-y-6">
+            <div class="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border-2 border-slate-200">
+                <button onclick="showMenu()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold px-4 py-2 rounded-xl btn-bounce flex items-center gap-2">
+                    <i class="fa-solid fa-house"></i> Menu Utama
+                </button>
+                <h2 class="text-xl font-black text-teal-800">📖 Belajar Hari & Bulan</h2>
+            </div>
+
+            <!-- Tab Switching Buttons -->
+            <div class="flex gap-4 border-b-2 border-slate-200 pb-2">
+                <button id="tab-btn-hari" onclick="switchMateriTab('hari')" class="flex-1 py-3 font-black text-lg rounded-2xl bg-teal-500 text-white shadow-md transition">
+                    📅 7 Nama Hari
+                </button>
+                <button id="tab-btn-bulan" onclick="switchMateriTab('bulan')" class="flex-1 py-3 font-black text-lg rounded-2xl bg-white text-slate-600 hover:bg-slate-100 transition border-2 border-slate-200">
+                    🗓️ 12 Nama Bulan
+                </button>
+            </div>
+
+            <!-- Content Tab 1: HARI -->
+            <div id="materi-tab-hari" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Hari Card Items generated dynamically -->
+            </div>
+
+            <!-- Content Tab 2: BULAN -->
+            <div id="materi-tab-bulan" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Bulan Card Items generated dynamically -->
+            </div>
+        </section>
+
+        <!-- ================= SECTION 4: MENU LEVEL KUIS ================= -->
+        <section id="section-kuis-menu" class="hidden space-y-6">
+            <div class="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border-2 border-slate-200">
+                <button onclick="showMenu()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold px-4 py-2 rounded-xl btn-bounce flex items-center gap-2">
+                    <i class="fa-solid fa-house"></i> Menu Utama
+                </button>
+                <h2 class="text-xl font-black text-amber-800">🎮 Pilih Level Kuis</h2>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4">
+                <!-- Level 1 -->
+                <div onclick="startQuiz(1)" class="bg-white p-6 rounded-3xl border-4 border-emerald-300 hover:border-emerald-500 shadow-md flex items-center justify-between cursor-pointer card-hover">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-600 font-black text-2xl flex items-center justify-center">
+                            L1
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-black text-slate-800">Level 1: Mengenal</h3>
+                            <p class="text-slate-600 text-sm font-semibold">Tebak gambar dan urutan dasar (10 Soal Pilihan Ganda)</p>
+                        </div>
+                    </div>
+                    <span id="score-lvl-1" class="font-black text-emerald-600 text-lg bg-emerald-50 px-3 py-1 rounded-xl border border-emerald-200">Nilai: -</span>
+                </div>
+
+                <!-- Level 2 -->
+                <div onclick="startQuiz(2)" class="bg-white p-6 rounded-3xl border-4 border-sky-300 hover:border-sky-500 shadow-md flex items-center justify-between cursor-pointer card-hover">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 rounded-2xl bg-sky-100 text-sky-600 font-black text-2xl flex items-center justify-center">
+                            L2
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-black text-slate-800">Level 2: Menunjukkan & Cocokkan</h3>
+                            <p class="text-slate-600 text-sm font-semibold">Tunjukkan hari/bulan sebelum & sesudah (10 Soal)</p>
+                        </div>
+                    </div>
+                    <span id="score-lvl-2" class="font-black text-sky-600 text-lg bg-sky-50 px-3 py-1 rounded-xl border border-sky-200">Nilai: -</span>
+                </div>
+
+                <!-- Level 3 -->
+                <div onclick="startQuiz(3)" class="bg-white p-6 rounded-3xl border-4 border-purple-300 hover:border-purple-500 shadow-md flex items-center justify-between cursor-pointer card-hover">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 rounded-2xl bg-purple-100 text-purple-600 font-black text-2xl flex items-center justify-center">
+                            L3
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-black text-slate-800">Level 3: Drag & Drop (Geser & Susun)</h3>
+                            <p class="text-slate-600 text-sm font-semibold">Geser nama hari/bulan ke urutan yang tepat (10 Soal)</p>
+                        </div>
+                    </div>
+                    <span id="score-lvl-3" class="font-black text-purple-600 text-lg bg-purple-50 px-3 py-1 rounded-xl border border-purple-200">Nilai: -</span>
+                </div>
+            </div>
+
+            <!-- View Certificate Button (if all completed) -->
+            <div id="cert-unlocked-banner" class="hidden bg-gradient-to-r from-amber-400 to-yellow-400 text-slate-900 p-6 rounded-3xl text-center shadow-xl space-y-3">
+                <div class="text-4xl">🏆 🎉</div>
+                <h3 class="text-2xl font-black">Selamat! Kamu Telah Menyelesaikan Semua Level!</h3>
+                <p class="font-bold">Sertifikat penghargaan kamu sudah siap untuk diunduh atau dicetak.</p>
+                <button onclick="showCertificate()" class="bg-slate-900 hover:bg-slate-800 text-white font-extrabold px-6 py-3 rounded-2xl btn-bounce text-lg inline-flex items-center gap-2">
+                    <i class="fa-solid fa-award text-yellow-400"></i> Lihat Sertifikat Kamu
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 5: ARENA KUIS ACTIVE ================= -->
+        <section id="section-quiz-play" class="hidden space-y-6">
+            <!-- Quiz Progress Top Bar -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border-2 border-slate-200 flex justify-between items-center">
+                <button onclick="confirmExitQuiz()" class="bg-rose-100 text-rose-700 hover:bg-rose-200 font-bold px-3 py-1.5 rounded-xl text-sm btn-bounce">
+                    <i class="fa-solid fa-xmark"></i> Keluar
+                </button>
+                <div class="flex items-center gap-2">
+                    <span id="quiz-level-title" class="font-black text-teal-800 text-sm md:text-base">Level 1</span>
+                </div>
+                <div class="bg-amber-100 text-amber-800 font-black px-3 py-1 rounded-xl text-sm">
+                    Soal <span id="quiz-current-num">1</span> / 10
+                </div>
+            </div>
+
+            <!-- Visual Progress Bar -->
+            <div class="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                <div id="quiz-progress-bar" class="bg-gradient-to-r from-teal-400 to-emerald-500 h-3 rounded-full transition-all duration-300" style="width: 10%;"></div>
+            </div>
+
+            <!-- Question Card Box -->
+            <div class="bg-white rounded-3xl p-6 md:p-8 shadow-xl border-4 border-teal-200 min-h-[350px] flex flex-col justify-between relative">
+                
+                <!-- Visual Visual Banner / Question Header -->
+                <div id="question-container" class="space-y-4">
+                    <!-- Dynamic Question Text & Visuals -->
+                </div>
+
+                <!-- Answer Container (MCQ or Drag Drop Area) -->
+                <div id="answer-container" class="mt-6">
+                    <!-- Dynamic Interactive Options -->
+                </div>
+
+                <!-- Visual Visual Feedback Overlay Banner -->
+                <div id="feedback-banner" class="hidden absolute inset-0 bg-white/95 backdrop-blur-md rounded-3xl flex flex-col items-center justify-center text-center p-6 z-20 space-y-4 animate-fade-in">
+                    <div id="feedback-icon" class="text-7xl">👍</div>
+                    <h3 id="feedback-title" class="text-3xl font-black">HEBAT! BENAR!</h3>
+                    <p id="feedback-desc" class="text-slate-600 font-bold text-lg">Jawaban kamu sangat tepat.</p>
+                    <button id="btn-next-question" onclick="nextQuestion()" class="bg-teal-500 hover:bg-teal-600 text-white font-extrabold px-8 py-3.5 rounded-2xl text-lg btn-bounce shadow-lg">
+                        Lanjut Soal <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 6: HASIL KUIS ================= -->
+        <section id="section-quiz-result" class="hidden bg-white rounded-3xl p-8 shadow-xl border-4 border-amber-300 text-center space-y-6 max-w-lg mx-auto w-full">
+            <div id="result-emoji" class="text-7xl animate-bounce">🏆</div>
+            <div>
+                <h2 class="text-3xl font-black text-slate-800">Kuis Selesai!</h2>
+                <p id="result-subtitle" class="text-slate-600 font-bold">Kerja bagus, kamu sudah berusaha!</p>
+            </div>
+
+            <!-- Score Visual Box -->
+            <div class="bg-amber-50 rounded-2xl p-6 border-2 border-amber-200">
+                <span class="block text-sm font-bold text-amber-800 uppercase tracking-wide">Nilai Akhir Kamu</span>
+                <span id="final-score-text" class="text-6xl font-black text-amber-600">100</span>
+            </div>
+
+            <div class="space-y-3">
+                <button id="btn-cert-from-result" onclick="showCertificate()" class="hidden w-full bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-500 hover:to-yellow-600 text-slate-900 font-extrabold py-3.5 px-6 rounded-2xl shadow-md btn-bounce text-lg flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-award"></i> Ambil Sertifikat
+                </button>
+
+                <button onclick="showKuisMenu()" class="w-full bg-teal-500 hover:bg-teal-600 text-white font-extrabold py-3.5 px-6 rounded-2xl shadow-md btn-bounce text-lg">
+                    🔄 Pilih Level Lain
+                </button>
+                
+                <button onclick="showMenu()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-800 font-extrabold py-3.5 px-6 rounded-2xl btn-bounce text-lg">
+                    🏠 Kembali ke Menu Utama
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= SECTION 7: SERTIFIKAT PRESTASI ================= -->
+        <section id="section-certificate" class="hidden space-y-6">
+            <div class="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border-2 border-slate-200">
+                <button onclick="showKuisMenu()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold px-4 py-2 rounded-xl btn-bounce flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i> Kembali
+                </button>
+                <button onclick="window.print()" class="bg-amber-500 hover:bg-amber-600 text-white font-extrabold px-4 py-2 rounded-xl btn-bounce flex items-center gap-2">
+                    <i class="fa-solid fa-print"></i> Cetak / Simpan PDF
+                </button>
+            </div>
+
+            <!-- Certificate Sheet -->
+            <div class="bg-white border-[12px] border-amber-400 p-8 md:p-12 rounded-3xl shadow-2xl relative text-center space-y-6 overflow-hidden max-w-3xl mx-auto">
+                <!-- Decorative Corner Badges -->
+                <div class="absolute -top-10 -left-10 w-28 h-28 bg-amber-200 rounded-full blur-xl opacity-60"></div>
+                <div class="absolute -bottom-10 -right-10 w-28 h-28 bg-teal-200 rounded-full blur-xl opacity-60"></div>
+                
+                <div class="border-4 border-dashed border-amber-300 p-6 md:p-10 rounded-2xl relative z-10 space-y-6">
+                    <div class="flex justify-center items-center gap-2 text-amber-500 text-3xl">
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-award text-5xl text-amber-600"></i>
+                        <i class="fa-solid fa-star"></i>
+                    </div>
+
+                    <h2 class="text-3xl md:text-4xl font-black text-slate-800 tracking-wider uppercase">SERTIFIKAT PENGHARGAAN</h2>
+                    <p class="text-slate-500 font-bold uppercase tracking-widest text-xs md:text-sm">Diberikan Kepada Siswa Hebat:</p>
+
+                    <!-- Student Name -->
+                    <div id="cert-student-name" class="text-3xl md:text-5xl font-black text-teal-700 underline decoration-amber-400 decoration-4 underline-offset-8">
+                        Nama Murid
+                    </div>
+
+                    <!-- Accumulated Score Display Badge -->
+                    <div class="inline-block bg-amber-50 border-2 border-amber-300 rounded-2xl px-6 py-3 my-2 shadow-sm">
+                        <span class="block text-xs font-bold text-amber-800 uppercase tracking-wider">Nilai Rata-Rata Akhir</span>
+                        <span id="cert-final-score" class="text-3xl font-black text-amber-600">100 / 100</span>
+                    </div>
+
+                    <p class="text-slate-600 font-semibold max-w-xl mx-auto text-sm md:text-base leading-relaxed">
+                        Telah berhasil menyelesaikan seluruh rangkaian Kuis Pembelajaran IPAS Kelas 4 SDKh
+                        mengenai <strong class="text-teal-800">"Mengidentifikasi Nama Hari dan Bulan"</strong> dengan hasil yang Sangat Memuaskan! 🎉
+                    </p>
+
+                    <div class="pt-6 flex justify-between items-end border-t-2 border-slate-200">
+                        <div class="text-left">
+                            <span class="block text-xs text-slate-400 font-bold uppercase">Tanggal Penyelesaian</span>
+                            <span id="cert-date" class="font-bold text-slate-700 text-sm">14 Oktober 2026</span>
+                        </div>
+                        <div class="text-center">
+                            <div class="w-16 h-16 bg-amber-100 border-2 border-amber-400 rounded-full flex items-center justify-center text-amber-600 font-black text-xs mx-auto mb-1">
+                                RESMI
+                            </div>
+                            <span class="block text-xs font-black text-slate-700">Kelas Ibu Tika</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white/80 border-t border-slate-200 py-3 text-center text-xs font-bold text-slate-500">
+        SDKh Tunarungu Kelas 4 • IPAS: Nama Hari & Bulan • Didevelop oleh Ibu Tika
+    </footer>
+
+    <script>
+        /* ================= STATE & DATA MANAGEMENT (Global Definitions) ================= */
+        let studentName = "";
+        let currentQuizLevel = 1;
+        let currentQuestionIndex = 0;
+        let quizQuestions = [];
+        let quizScore = 0;
+        let scores = { 1: null, 2: null, 3: null };
+
+        // Data Hari
+        const hariList = [
+            { nama: "Senin", urutan: 1, warna: "bg-red-500", simbol: "🚩", isyarat: "S-E-N-I-N", desc: "Hari pertama masuk sekolah" },
+            { nama: "Selasa", urutan: 2, warna: "bg-orange-500", simbol: "🎒", isyarat: "S-E-L-A-S-A", desc: "Hari kedua dalam seminggu" },
+            { nama: "Rabu", urutan: 3, warna: "bg-amber-500", simbol: "🎨", isyarat: "R-A-B-U", desc: "Hari ketiga dalam seminggu" },
+            { nama: "Kamis", urutan: 4, warna: "bg-emerald-500", simbol: "⚽", isyarat: "K-A-M-I-S", desc: "Hari keempat dalam seminggu" },
+            { nama: "Jumat", urutan: 5, warna: "bg-teal-500", simbol: "🕌", isyarat: "J-U-M-A-T", desc: "Hari kelima dalam seminggu" },
+            { nama: "Sabtu", urutan: 6, warna: "bg-blue-500", simbol: "🚲", isyarat: "S-A-B-T-U", desc: "Hari akhir pekan/libur" },
+            { nama: "Minggu", urutan: 7, warna: "bg-purple-500", simbol: "🏖️", isyarat: "M-I-N-G-G-U", desc: "Hari istirahat & berkumpul" }
+        ];
+
+        // Data Bulan
+        const bulanList = [
+            { nama: "Januari", urutan: 1, simbol: "🎆", ket: "Bulan ke-1 (31 Hari)" },
+            { nama: "Februari", urutan: 2, simbol: "🌧️", ket: "Bulan ke-2 (28/29 Hari)" },
+            { nama: "Maret", urutan: 3, simbol: "🌱", ket: "Bulan ke-3 (31 Hari)" },
+            { nama: "April", urutan: 4, simbol: "🌧️", ket: "Bulan ke-4 (30 Hari)" },
+            { nama: "Mei", urutan: 5, simbol: "🌺", ket: "Bulan ke-5 (31 Hari)" },
+            { nama: "Juni", urutan: 6, simbol: "☀️", ket: "Bulan ke-6 (30 Hari)" },
+            { nama: "Juli", urutan: 7, simbol: "🏖️", ket: "Bulan ke-7 (31 Hari)" },
+            { nama: "Agustus", urutan: 8, simbol: "🇲🇨", ket: "Bulan ke-8 (HUT RI 17)" },
+            { nama: "September", urutan: 9, simbol: "🌻", ket: "Bulan ke-9 (30 Hari)" },
+            { nama: "Oktober", urutan: 10, simbol: "🍂", ket: "Bulan ke-10 (31 Hari)" },
+            { nama: "November", urutan: 11, simbol: "🌧️", ket: "Bulan ke-11 (30 Hari)" },
+            { nama: "Desember", urutan: 12, simbol: "🎁", ket: "Bulan ke-12 (Akhir Tahun)" }
+        ];
+
+        /* ================= SOUND EFFECTS & BACKGROUND MUSIC SYNTHESIZER ================= */
+        let synth = null;
+        let bgMusicLoop = null;
+        let isMusicPlaying = false;
+        
+        function initAudio() {
+            if (!synth && window.Tone) {
+                Tone.start();
+                synth = new Tone.Synth().toDestination();
+            }
+        }
+
+        // Setup background music loop (cheerful, relaxing, engaging melodic progression)
+        function initBackgroundMusic() {
+            if (bgMusicLoop || !window.Tone) return;
+
+            try {
+                // Using an upbeat cheerful synthesizer patch
+                const synthBGM = new Tone.Synth({
+                    oscillator: { type: "triangle" },
+                    envelope: {
+                        attack: 0.02,
+                        decay: 0.15,
+                        sustain: 0.1,
+                        release: 0.3
+                    },
+                    volume: -8
+                }).toDestination();
+
+                // High-energy, bouncy, cheerful melody sequence in C Major
+                const melodyNotes = [
+                    "C5", "E5", "G5", "C6", "G5", "E5", "F5", "A5",
+                    "G5", "B5", "C6", "G5", "E5", "C5", "D5", "G5",
+                    "A5", "C6", "B5", "A5", "G5", "E5", "F5", "D5",
+                    "C5", "E5", "G5", "B5", "C6", "C6", "G5", "C6"
+                ];
+
+                let noteIndex = 0;
+                // Faster tempo and 8th-note rhythm for an extra cheerful and gaming feel!
+                bgMusicLoop = new Tone.Loop(time => {
+                    const currentNote = melodyNotes[noteIndex];
+                    synthBGM.triggerAttackRelease(currentNote, "8n", time);
+                    noteIndex = (noteIndex + 1) % melodyNotes.length;
+                }, "8n");
+
+                Tone.Transport.bpm.value = 140; // Ramped up tempo for max cheerfulness & excitement!
+            } catch(e) {
+                console.log("BGM Init error:", e);
+            }
+        }
+
+        function toggleBackgroundMusic() {
+            try {
+                initAudio();
+                initBackgroundMusic();
+
+                if (!isMusicPlaying) {
+                    Tone.Transport.start();
+                    if (bgMusicLoop && bgMusicLoop.state !== "started") {
+                        bgMusicLoop.start(0);
+                    }
+                    isMusicPlaying = true;
+                    document.getElementById("music-icon").className = "fa-solid fa-volume-high text-emerald-600 animate-pulse";
+                    document.getElementById("music-text").innerText = "Musik: Hidup";
+                } else {
+                    Tone.Transport.stop();
+                    if (bgMusicLoop) {
+                        bgMusicLoop.stop();
+                    }
+                    isMusicPlaying = false;
+                    document.getElementById("music-icon").className = "fa-solid fa-volume-xmark";
+                    document.getElementById("music-text").innerText = "Musik: Mati";
+                }
+            } catch(e) {
+                console.log("Toggle music error:", e);
+            }
+        }
+
+        // Sound effect functions
+        function playMenuSound() {
+            try {
+                initAudio();
+                if (synth) {
+                    synth.triggerAttackRelease("C5", "8n");
+                }
+            } catch(e) {
+                console.log("Audio play error:", e);
+            }
+        }
+
+        function playCorrectSound() {
+            try {
+                initAudio();
+                if (window.Tone) {
+                    const polySynth = new Tone.PolySynth(Tone.Synth).toDestination();
+                    polySynth.triggerAttackRelease(["C5", "E5", "G5"], "8n");
+                }
+            } catch(e) {
+                console.log("Audio play error:", e);
+            }
+        }
+
+        function playWrongSound() {
+            try {
+                initAudio();
+                if (window.Tone) {
+                    const polySynth = new Tone.PolySynth(Tone.Synth).toDestination();
+                    polySynth.triggerAttackRelease(["E3", "C3"], "6n");
+                }
+            } catch(e) {
+                console.log("Audio play error:", e);
+            }
+        }
+
+        /* ================= INITIALIZATION & NAVIGATION ================= */
+        window.onload = function() {
+            renderMateri();
+        };
+
+        function registerStudent(e) {
+            e.preventDefault();
+            playMenuSound();
+            const input = document.getElementById("input-student-name").value.trim();
+            if(!input) return;
+
+            studentName = input;
+            document.getElementById("badge-student-name").innerText = studentName;
+            document.getElementById("display-student-name").innerText = studentName;
+            document.getElementById("student-badge").classList.remove("hidden");
+            document.getElementById("btn-toggle-music").classList.remove("hidden");
+
+            showMenu();
+        }
+
+        function hideAllSections() {
+            const sections = [
+                "section-welcome", "section-menu", "section-materi",
+                "section-kuis-menu", "section-quiz-play", "section-quiz-result",
+                "section-certificate"
+            ];
+            sections.forEach(s => document.getElementById(s).classList.add("hidden"));
+        }
+
+        function showMenu() {
+            playMenuSound();
+            hideAllSections();
+            document.getElementById("section-menu").classList.remove("hidden");
+            updateBadgeCount();
+        }
+
+        function showMateri() {
+            playMenuSound();
+            hideAllSections();
+            document.getElementById("section-materi").classList.remove("hidden");
+        }
+
+        function showKuisMenu() {
+            playMenuSound();
+            hideAllSections();
+            document.getElementById("section-kuis-menu").classList.remove("hidden");
+            updateQuizMenuScores();
+        }
+
+        function updateBadgeCount() {
+            let completed = 0;
+            if(scores[1] !== null) completed++;
+            if(scores[2] !== null) completed++;
+            if(scores[3] !== null) completed++;
+            document.getElementById("badge-count-display").innerText = `⭐ ${completed * 100} Pts`;
+        }
+
+        function updateQuizMenuScores() {
+            if(scores[1] !== null) document.getElementById("score-lvl-1").innerText = `Nilai: ${scores[1]}`;
+            if(scores[2] !== null) document.getElementById("score-lvl-2").innerText = `Nilai: ${scores[2]}`;
+            if(scores[3] !== null) document.getElementById("score-lvl-3").innerText = `Nilai: ${scores[3]}`;
+
+            // Unlocked certificate check
+            if(scores[1] !== null && scores[2] !== null && scores[3] !== null) {
+                document.getElementById("cert-unlocked-banner").classList.remove("hidden");
+            }
+        }
+
+        /* ================= MATERI SECTION LOGIC ================= */
+        function renderMateri() {
+            const containerHari = document.getElementById("materi-tab-hari");
+            if (containerHari) {
+                containerHari.innerHTML = "";
+                hariList.forEach(h => {
+                    containerHari.innerHTML += `
+                        <div class="bg-white rounded-2xl p-5 border-2 border-slate-200 shadow-sm hover:shadow-md transition space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-black uppercase tracking-wider text-slate-400">Hari Ke-${h.urutan}</span>
+                                <span class="text-2xl">${h.simbol}</span>
+                            </div>
+                            <h3 class="text-2xl font-black text-slate-800">${h.nama}</h3>
+                            <div class="bg-slate-100 p-2 rounded-xl text-center">
+                                <span class="text-xs font-bold text-slate-500 block">Isyarat Huruf:</span>
+                                <span class="font-mono font-black text-teal-700 tracking-widest">${h.isyarat}</span>
+                            </div>
+                            <p class="text-xs text-slate-600 font-semibold">${h.desc}</p>
+                        </div>
+                    `;
+                });
+            }
+
+            const containerBulan = document.getElementById("materi-tab-bulan");
+            if (containerBulan) {
+                containerBulan.innerHTML = "";
+                bulanList.forEach(b => {
+                    containerBulan.innerHTML += `
+                        <div class="bg-white rounded-2xl p-5 border-2 border-slate-200 shadow-sm hover:shadow-md transition space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-black uppercase tracking-wider text-teal-600 bg-teal-50 px-2 py-0.5 rounded-md">Bulan Ke-${b.urutan}</span>
+                                <span class="text-2xl">${b.simbol}</span>
+                            </div>
+                            <h3 class="text-xl font-black text-slate-800">${b.nama}</h3>
+                            <p class="text-xs text-slate-600 font-bold">${b.ket}</p>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        function switchMateriTab(tab) {
+            playMenuSound();
+            const btnHari = document.getElementById("tab-btn-hari");
+            const btnBulan = document.getElementById("tab-btn-bulan");
+            const contentHari = document.getElementById("materi-tab-hari");
+            const contentBulan = document.getElementById("materi-tab-bulan");
+
+            if(tab === 'hari') {
+                btnHari.className = "flex-1 py-3 font-black text-lg rounded-2xl bg-teal-500 text-white shadow-md transition";
+                btnBulan.className = "flex-1 py-3 font-black text-lg rounded-2xl bg-white text-slate-600 hover:bg-slate-100 transition border-2 border-slate-200";
+                contentHari.classList.remove("hidden");
+                contentBulan.classList.add("hidden");
+            } else {
+                btnBulan.className = "flex-1 py-3 font-black text-lg rounded-2xl bg-teal-500 text-white shadow-md transition";
+                btnHari.className = "flex-1 py-3 font-black text-lg rounded-2xl bg-white text-slate-600 hover:bg-slate-100 transition border-2 border-slate-200";
+                contentBulan.classList.remove("hidden");
+                contentHari.classList.add("hidden");
+            }
+        }
+
+        /* ================= QUIZ GENERATION ENGINE ================= */
+        function startQuiz(level) {
+            playMenuSound();
+            currentQuizLevel = level;
+            currentQuestionIndex = 0;
+            quizScore = 0;
+            quizQuestions = generateRandomQuestions(level, 10);
+
+            hideAllSections();
+            document.getElementById("section-quiz-play").classList.remove("hidden");
+            document.getElementById("quiz-level-title").innerText = `Level ${level}: ${level === 1 ? 'Mengenal' : level === 2 ? 'Menunjukkan' : 'Drag & Drop'}`;
+
+            renderQuestion();
+        }
+
+        function generateRandomQuestions(level, count) {
+            let questions = [];
+
+            if(level === 1) {
+                // LEVEL 1: Mengenal dasar (MCQ)
+                for(let i = 0; i < count; i++) {
+                    const isHari = Math.random() > 0.5;
+                    if(isHari) {
+                        const target = hariList[Math.floor(Math.random() * hariList.length)];
+                        const wrongOpts = hariList.filter(h => h.nama !== target.nama).map(h => h.nama);
+                        const shuffledOpts = shuffleArray([target.nama, wrongOpts[0], wrongOpts[1]]);
+
+                        questions.push({
+                            type: 'mcq',
+                            questionText: `Hari ke-${target.urutan} dalam satu minggu adalah ...`,
+                            visual: `📅 Ke-${target.urutan}`,
+                            options: shuffledOpts,
+                            answer: target.nama
+                        });
+                    } else {
+                        const target = bulanList[Math.floor(Math.random() * bulanList.length)];
+                        const wrongOpts = bulanList.filter(b => b.nama !== target.nama).map(b => b.nama);
+                        const shuffledOpts = shuffleArray([target.nama, wrongOpts[0], wrongOpts[1]]);
+
+                        questions.push({
+                            type: 'mcq',
+                            questionText: `Bulan ke-${target.urutan} dalam kalender adalah ...`,
+                            visual: `🗓️ Ke-${target.urutan}`,
+                            options: shuffledOpts,
+                            answer: target.nama
+                        });
+                    }
+                }
+            } else if(level === 2) {
+                // LEVEL 2: Menunjukkan Sebelum / Sesudah
+                for(let i = 0; i < count; i++) {
+                    const isHari = Math.random() > 0.5;
+                    if(isHari) {
+                        const index = Math.floor(Math.random() * 5) + 1; // 1 to 5
+                        const isAfter = Math.random() > 0.5;
+                        const targetHari = hariList[index];
+                        const answerHari = isAfter ? hariList[index + 1] : hariList[index - 1];
+
+                        const wrongOpts = hariList.filter(h => h.nama !== answerHari.nama).map(h => h.nama);
+                        const shuffledOpts = shuffleArray([answerHari.nama, wrongOpts[0], wrongOpts[1]]);
+
+                        questions.push({
+                            type: 'mcq',
+                            questionText: `Hari **${isAfter ? 'SESUDAH' : 'SEBELUM'}** hari **${targetHari.nama}** adalah ...`,
+                            visual: `📌 ${targetHari.nama}`,
+                            options: shuffledOpts,
+                            answer: answerHari.nama
+                        });
+                    } else {
+                        const index = Math.floor(Math.random() * 10) + 1; // 1 to 10
+                        const isAfter = Math.random() > 0.5;
+                        const targetBulan = bulanList[index];
+                        const answerBulan = isAfter ? bulanList[index + 1] : bulanList[index - 1];
+
+                        const wrongOpts = bulanList.filter(b => b.nama !== answerBulan.nama).map(b => b.nama);
+                        const shuffledOpts = shuffleArray([answerBulan.nama, wrongOpts[0], wrongOpts[1]]);
+
+                        questions.push({
+                            type: 'mcq',
+                            questionText: `Bulan **${isAfter ? 'SESUDAH' : 'SEBELUM'}** bulan **${targetBulan.nama}** adalah ...`,
+                            visual: `📆 ${targetBulan.nama}`,
+                            options: shuffledOpts,
+                            answer: answerBulan.nama
+                        });
+                    }
+                }
+            } else if(level === 3) {
+                // LEVEL 3: Drag and Drop (Susun Urutan)
+                for(let i = 0; i < count; i++) {
+                    const isHari = Math.random() > 0.5;
+                    if(isHari) {
+                        // Choose 3 consecutive days
+                        const startIdx = Math.floor(Math.random() * 5); // 0 to 4
+                        const seq = [hariList[startIdx], hariList[startIdx+1], hariList[startIdx+2]];
+                        const missingIdx = Math.floor(Math.random() * 3);
+                        const targetAnswer = seq[missingIdx].nama;
+
+                        const choices = shuffleArray([
+                            targetAnswer,
+                            hariList[(startIdx + 3) % 7].nama,
+                            hariList[(startIdx + 4) % 7].nama
+                        ]);
+
+                        questions.push({
+                            type: 'dragdrop',
+                            questionText: 'Lengkapi urutan nama hari berikut!',
+                            sequence: seq.map((item, idx) => idx === missingIdx ? '___' : item.nama),
+                            missingIndex: missingIdx,
+                            options: choices,
+                            answer: targetAnswer
+                        });
+                    } else {
+                        // Choose 3 consecutive months
+                        const startIdx = Math.floor(Math.random() * 10); // 0 to 9
+                        const seq = [bulanList[startIdx], bulanList[startIdx+1], bulanList[startIdx+2]];
+                        const missingIdx = Math.floor(Math.random() * 3);
+                        const targetAnswer = seq[missingIdx].nama;
+
+                        const choices = shuffleArray([
+                            targetAnswer,
+                            bulanList[(startIdx + 3) % 12].nama,
+                            bulanList[(startIdx + 4) % 12].nama
+                        ]);
+
+                        questions.push({
+                            type: 'dragdrop',
+                            questionText: 'Lengkapi urutan nama bulan berikut!',
+                            sequence: seq.map((item, idx) => idx === missingIdx ? '___' : item.nama),
+                            missingIndex: missingIdx,
+                            options: choices,
+                            answer: targetAnswer
+                        });
+                    }
+                }
+            }
+
+            return questions;
+        }
+
+        /* ================= QUESTION RENDERING & CHECKING ================= */
+        function renderQuestion() {
+            const q = quizQuestions[currentQuestionIndex];
+            
+            // Progress Bar Update
+            document.getElementById("quiz-current-num").innerText = currentQuestionIndex + 1;
+            document.getElementById("quiz-progress-bar").style.width = `${((currentQuestionIndex + 1) / 10) * 100}%`;
+
+            // Hide feedback overlay
+            document.getElementById("feedback-banner").classList.add("hidden");
+
+            const qContainer = document.getElementById("question-container");
+            const aContainer = document.getElementById("answer-container");
+
+            qContainer.innerHTML = "";
+            aContainer.innerHTML = "";
+
+            if(q.type === 'mcq') {
+                qContainer.innerHTML = `
+                    <div class="text-center space-y-4">
+                        <div class="inline-block bg-teal-100 text-teal-800 text-3xl font-black px-6 py-3 rounded-2xl border-2 border-teal-300">
+                            ${q.visual}
+                        </div>
+                        <h3 class="text-xl md:text-2xl font-black text-slate-800 leading-snug">${q.questionText}</h3>
+                    </div>
+                `;
+
+                aContainer.className = "grid grid-cols-1 md:grid-cols-3 gap-4";
+                q.options.forEach(opt => {
+                    aContainer.innerHTML += `
+                        <button onclick="checkAnswer('${opt}')" class="bg-slate-50 hover:bg-teal-50 border-4 border-slate-200 hover:border-teal-400 text-slate-800 font-extrabold py-5 px-4 rounded-2xl text-xl btn-bounce transition text-center shadow-sm">
+                            ${opt}
+                        </button>
+                    `;
+                });
+            } else if(q.type === 'dragdrop') {
+                qContainer.innerHTML = `
+                    <div class="text-center space-y-4">
+                        <p class="text-sm font-bold text-slate-500 uppercase">Petunjuk: Tap/Klik Pilihan untuk mengisi kotak kosong</p>
+                        <h3 class="text-xl md:text-2xl font-black text-slate-800">${q.questionText}</h3>
+                        
+                        <!-- Sequence Box Display -->
+                        <div class="flex justify-center items-center gap-3 mt-4">
+                            ${q.sequence.map((item, i) => `
+                                <div class="px-4 py-3 md:px-6 md:py-4 rounded-2xl font-black text-lg md:text-xl border-4 ${item === '___' ? 'border-dashed border-amber-400 bg-amber-50 text-amber-700 min-w-[110px] text-center' : 'border-slate-300 bg-slate-100 text-slate-700'}">
+                                    ${item}
+                                </div>
+                            `).join('<i class="fa-solid fa-arrow-right text-slate-300"></i>')}
+                        </div>
+                    </div>
+                `;
+
+                aContainer.className = "grid grid-cols-1 md:grid-cols-3 gap-4";
+                q.options.forEach(opt => {
+                    aContainer.innerHTML += `
+                        <button onclick="checkAnswer('${opt}')" class="bg-amber-100 hover:bg-amber-200 border-4 border-amber-300 text-amber-900 font-black py-4 px-4 rounded-2xl text-xl btn-bounce transition text-center shadow-md">
+                            🎯 ${opt}
+                        </button>
+                    `;
+                });
+            }
+        }
+
+        function checkAnswer(selected) {
+            const q = quizQuestions[currentQuestionIndex];
+            const isCorrect = (selected === q.answer);
+
+            const fbBanner = document.getElementById("feedback-banner");
+            const fbIcon = document.getElementById("feedback-icon");
+            const fbTitle = document.getElementById("feedback-title");
+            const fbDesc = document.getElementById("feedback-desc");
+
+            fbBanner.classList.remove("hidden");
+
+            if(isCorrect) {
+                playCorrectSound();
+                quizScore += 10;
+                fbIcon.innerText = "🎉";
+                fbTitle.innerText = "HEBAT! BENAR!";
+                fbTitle.className = "text-3xl font-black text-emerald-600";
+                fbDesc.innerText = `Jawaban kamu (${selected}) sangat tepat!`;
+                
+                // Trigger celebratory confetti
+                confetti({
+                    particleCount: 50,
+                    spread: 60,
+                    origin: { y: 0.6 }
+                });
+            } else {
+                playWrongSound();
+                fbIcon.innerText = "❌";
+                fbTitle.innerText = "KURANG TEPAT!";
+                fbTitle.className = "text-3xl font-black text-rose-600";
+                fbDesc.innerText = `Jawaban yang benar adalah: ${q.answer}`;
+            }
+        }
+
+        function nextQuestion() {
+            playMenuSound();
+            currentQuestionIndex++;
+            if(currentQuestionIndex < quizQuestions.length) {
+                renderQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function finishQuiz() {
+            scores[currentQuizLevel] = quizScore;
+            
+            hideAllSections();
+            document.getElementById("section-quiz-result").classList.remove("hidden");
+            document.getElementById("final-score-text").innerText = quizScore;
+
+            if(quizScore >= 80) {
+                document.getElementById("result-emoji").innerText = "🏆";
+                document.getElementById("result-subtitle").innerText = "Luar biasa! Pemahamanmu sangat bagus!";
+            } else {
+                document.getElementById("result-emoji").innerText = "💪";
+                document.getElementById("result-subtitle").innerText = "Tetap semangat! Ayo coba latihan lagi!";
+            }
+
+            // Check if all levels completed for certificate option
+            if(scores[1] !== null && scores[2] !== null && scores[3] !== null) {
+                document.getElementById("btn-cert-from-result").classList.remove("hidden");
+            }
+        }
+
+        function confirmExitQuiz() {
+            playMenuSound();
+            if(confirm("Apakah kamu yakin ingin keluar dari kuis?")) {
+                showKuisMenu();
+            }
+        }
+
+        /* ================= CERTIFICATE LOGIC ================= */
+        function showCertificate() {
+            playMenuSound();
+            hideAllSections();
+            document.getElementById("section-certificate").classList.remove("hidden");
+            document.getElementById("cert-student-name").innerText = studentName;
+            
+            // Calculate total accumulated average score
+            const score1 = scores[1] || 0;
+            const score2 = scores[2] || 0;
+            const score3 = scores[3] || 0;
+            const avgScore = Math.round((score1 + score2 + score3) / 3);
+            
+            document.getElementById("cert-final-score").innerText = `${avgScore} / 100`;
+
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById("cert-date").innerText = now.toLocaleDateString('id-ID', options);
+        }
+
+        /* Helper function to shuffle array */
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+    </script>
+</body>
+</html>
